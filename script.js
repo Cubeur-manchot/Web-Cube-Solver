@@ -9,13 +9,10 @@ function init()
 	window.admittedMoves["1x1x1"] = ["x", "y", "z"];
 	window.admittedMoves["2x2x2"] = window.admittedMoves["1x1x1"].concat(["R", "U", "F", "L", "D", "B"]);
 	window.admittedMoves["3x3x3"] = window.admittedMoves["2x2x2"].concat(["r", "u", "f", "l", "d", "b", "M", "E", "S"]);
-	window.admittedMoves["4x4x4"] = window.admittedMoves["3x3x3"].concat(["Rw", "Uw", "Fw", "Lw", "Dw", "Bw", "3Rw", "3Uw", "3Fw", "Lw", "Dw", ]);
-	window.admittedMoves["5x5x5"] = window.admittedMoves["3x3x3"].concat(
-		["Rw", "Uw", "Fw", "Lw", "Dw", "Bw", "m", "e", "s"]);
-	window.admittedMoves["6x6x6"] = window.admittedMoves["3x3x3"].concat(
-		["Rw", "Uw", "Fw", "Lw", "Dw", "Bw", "m", "e", "s"]);
-	window.admittedMoves["7x7x7"] = window.admittedMoves["3x3x3"].concat(
-		["Rw", "Uw", "Fw", "Lw", "Dw", "Bw", "m", "e", "s"]);
+	window.admittedMoves["4x4x4"] = window.admittedMoves["3x3x3"];
+	window.admittedMoves["5x5x5"] = window.admittedMoves["3x3x3"];
+	window.admittedMoves["6x6x6"] = window.admittedMoves["3x3x3"];
+	window.admittedMoves["7x7x7"] = window.admittedMoves["3x3x3"];
 	window.eventName = "3x3x3";
 }
 
