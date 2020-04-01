@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Cube Solver</title>
+    <link type="text/css" rel="stylesheet" media="all" href="style.css">
+    <script type="text/javascript" src="script.js"></script>
+    <script type="text/javascript" src="tagCreator.js"></script>
+</head>
+<body onload="init();">
+    <h1>Web Cube Solver</h1>
+    <select id="eventNameSelect" onchange="updateEventName();">
+        <option value="1x1x1">1x1x1</option>
+        <option value="2x2x2">2x2x2</option>
+        <option value="3x3x3" selected="selected">3x3x3</option>
+        <option value="4x4x4">4x4x4</option>
+        <option value="5x5x5">4x4x4</option>
+        <option value="6x6x6">4x4x4</option>
+        <option value="7x7x7">4x4x4</option>
+        <option value="pyraminx">4x4x4</option>
+        <option value="megaminx">4x4x4</option>
+        <option value="skewb">4x4x4</option>
+        <option value="square one">4x4x4</option>
+        <option value="clock">4x4x4</option>
+    </select>
+    <button onclick="parseMoves();">Parse moves</button>
+    <button onclick="displayState();">Display Cube</button>
+    <form id="moveParserForm">
+        <label for="movesToParse">Enter moves :</label><br>
+        <input type="text" id="movesToParse" name="movesToParse" value="" onkeypress="if (event.keyCode !== 13) { return true; } else { parseMoves(); return false; }">
+    </form>
+    <div id="parsedMoves"></div>
+</body>
+</html>
