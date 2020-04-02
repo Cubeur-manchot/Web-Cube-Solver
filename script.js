@@ -96,7 +96,7 @@ function parseMoves()
 					unrecognizedChars.push(char);
 				}
 			} else if (listOfAdmittedMoves.includes(char)) { // base moves
-				if (!hasSliceNumber) { // always true except maybe for the first move
+				if (hasBaseMove) { // if a base move has already been found
 					if (move !== "") {
 						movesArray.push(move);
 					}
