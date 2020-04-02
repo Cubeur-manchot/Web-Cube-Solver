@@ -13,6 +13,8 @@ function init()
 	window.admittedMoves["5x5x5"] = window.admittedMoves["3x3x3"];
 	window.admittedMoves["6x6x6"] = window.admittedMoves["3x3x3"];
 	window.admittedMoves["7x7x7"] = window.admittedMoves["3x3x3"];
+	window.admittedMoves["pyraminx"] = ["R", "U", "L", "B", "r", "u", "l", "b"];
+	window.admittedMoves["skewb"] = ["R", "U", "L", "B"];
 	window.eventName = "3x3x3";
 }
 
@@ -33,14 +35,14 @@ function parseMoves()
 		parsedMovesHtmlTag,
 		//arrays
 		listOfAdmittedMoves = window.admittedMoves[window.eventName],
-		spaceCutMoves = [], spaceAndApostropheCutMoves = [], unrecognizedChars = [], movesArray = [],
+		spaceCutMoves = [], spaceAndApostropheCutMoves = [], unrecognizedChars = [], movesArray = [], fullyCheckedMovesArray = [],
 		// strings
 		movesString = document.querySelector("input#movesToParse").value + " ", moveStringBackup = movesString,
 		movesWithoutSpace, movesWithoutSpaceOrApostrophe, char, move,
 		// integers
-		indexOfSpace, indexOfApostrophe,
+		indexOfSpace, indexOfApostrophe, cubeSize,
 		// booleans
-		hasSliceNumber, hasMinus, minusIsClosed, hasBaseMove, hasTurnAngle;
+		hasSliceNumber, hasMinus, minusIsClosed, hasBaseMove, hasTurnAngle, isCube;
 
 	// cut with spaces
 	while(movesString.includes(" ")) {
@@ -121,6 +123,19 @@ function parseMoves()
 			unrecognizedChars.push(move);
 		}
 	}
+	// additional check to manage wide and inner slice moves
+	isCube = window.eventName[1] === "x";
+	cubeSize = window.eventName[0];
+	for (move of movesArray) {
+		if (move.includes("w") && (!isCube || cubeSize < 3)) { // wide moves are allowed only for cubes with size > 2
+			unrecognizedChars.push(move);
+		} else if (/^\d+$/.test(move[0]) && (!isCube || move[0] >= cubeSize)) { // slice number are only allowed for cubes strictly bigger than slice number
+			unrecognizedChars.push(move);
+		} else {
+			fullyCheckedMovesArray.push(move);
+		}
+	}
+
 	if (unrecognizedChars.length !== 0) { // print unrecognized characters
 		alert("Warning, some characters were not well parsed" +
 			"\nOriginal sequence : " + moveStringBackup +
@@ -129,7 +144,7 @@ function parseMoves()
 	}
 	parsedMovesHtmlTag = document.querySelector("div#parsedMoves");
 	parsedMovesHtmlTag.textContent = "";
-	for (move of movesArray) { // print parsed moves
+	for (move of fullyCheckedMovesArray) { // print parsed moves
 		parsedMovesHtmlTag.appendChild(createHtmlTagWithClassNameAndTextContent("div", "parsedMove", move));
 	}
 }
