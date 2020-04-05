@@ -16,6 +16,7 @@ function init()
 	window.admittedMoves["pyraminx"] = ["R", "U", "L", "B", "r", "u", "l", "b"];
 	window.admittedMoves["skewb"] = ["R", "U", "L", "B"];
 	window.eventName = "3x3x3";
+	window.moveSequence = [];
 }
 
 function updateEventName()
@@ -24,9 +25,36 @@ function updateEventName()
 	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
 }
 
-function displayState()
+function createCubeAndApplySequence()
 {
-	// wow
+	let cubeState;
+	if (window.eventName === "1x1x1") {
+		cubeState = new Cube1x1x1State();
+	}
+	cubeState.applySequence(window.moveSequence);
+}
+
+function displayCube()
+{
+	let cubeImageContainerHtmlTag = document.querySelector("div#cubeImageContainer"),
+		cubeImageHtmlTag = createHtmlTagWithId("img", "cubeImage"), moveSequence = window.moveSequence.join(' '), src;
+	if (window.eventName === "pyraminx") {
+		src = "";
+	} else if (window.eventName === "megaminx") {
+		src = "";
+	} else if (window.eventName === "skewb") {
+		src = "";
+	} else if (window.eventName === "square one") {
+		src = "";
+	} else if (window.eventName === "clock") {
+		src = "";
+	} else if (window.eventName[1] === "x") { // NxNxN cubes
+		src = "http://cube.crider.co.uk/visualcube.php?fmt=png&bg=t&size=250&alg=x2" + moveSequence + "&pzl=" + window.eventName[0];
+	}
+
+	cubeImageHtmlTag.src = src;
+	cubeImageContainerHtmlTag.textContent = "";
+	cubeImageContainerHtmlTag.appendChild(cubeImageHtmlTag);
 }
 
 function parseMoves()
@@ -129,7 +157,10 @@ function parseMoves()
 	for (move of movesArray) {
 		if (move.includes("w") && (!isCube || cubeSize < 3)) { // wide moves are allowed only for cubes with size > 2
 			unrecognizedChars.push(move);
-		} else if (/^\d+$/.test(move[0]) && (!isCube || move[0] >= cubeSize)) { // slice number are only allowed for cubes strictly bigger than slice number
+		} else if (move.includes("-") && (!isCube || cubeSize < 4)) { // block slice moves are allowed only for cubes with size > 3
+			unrecognizedChars.push(move);
+		} else if (/^\d+$/.test(move[0]) && // slice number are only allowed for cubes strictly bigger than slice number, and not for rotations
+			(!isCube || move[0] >= cubeSize || move.includes("x") || move.includes("z") || move.includes("z"))) {
 			unrecognizedChars.push(move);
 		} else {
 			fullyCheckedMovesArray.push(move);
@@ -147,4 +178,5 @@ function parseMoves()
 	for (move of fullyCheckedMovesArray) { // print parsed moves
 		parsedMovesHtmlTag.appendChild(createHtmlTagWithClassNameAndTextContent("div", "parsedMove", move));
 	}
+	window.moveSequence = fullyCheckedMovesArray;
 }

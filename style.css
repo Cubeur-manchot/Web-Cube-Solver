@@ -1,1 +1,105 @@
 /* to do */
+
+body {
+    padding: 5px;
+    background-color: rgb(230, 230, 230);
+    font-family: "Muli", sans-serif;
+    text-align: center;
+}
+
+section.column {
+    margin: 15px;
+    padding: 10px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+section#middleColumn, section#rightColumn {
+    width: 300px;
+}
+
+section#leftColumn {
+    width: 250px;
+}
+
+section#leftColumn, section#rightColumn {
+    text-align: left;
+}
+
+section#middleColumn {
+    text-align: center;
+}
+
+h1 {
+    margin: 15px 0 15px 0;
+    text-align: center;
+    font-size: 50px;
+    color: rgb(0, 0, 0);
+    font-style : italic;
+    text-shadow: rgb(128, 128, 128) 2px 2px 2px;
+    column-span: all;
+}
+
+form#moveParserForm {
+    padding: 10px;
+}
+
+select#eventNameSelect {
+    margin: 10px;
+}
+
+label#movesToParseLabel {
+    display: inline-block;
+    margin: 0 0 5px 0;
+}
+
+input#movesToParse {
+    min-width: 200px;
+}
+
+button#parseMoveButton {
+    margin: 20px 10px 20px 10px;
+}
+
+div#parsedMovesLabel {
+    margin: 0 0 0 10px;
+}
+
+div#parsedMoves {
+    display: inline-block;
+    min-height: 30px;
+    min-width: 50px;
+    margin: 5px 0 0 10px;
+    padding: 5px 0 0 5px;
+    background-color: rgb(200, 200, 200);
+}
+
+div.parsedMove {
+    display: inline-block;
+    background-color: rgb(240, 240, 240);
+    margin: 0 5px 5px 0;
+    padding: 3px;
+}
+
+div#cubeImageContainer {
+    display: inline-block;
+    margin: 5px 0 0 0;
+    width: 250px;
+    height: 250px;
+    background-color: white;
+    border: 1px solid rgb(200, 200, 200);
+}
+
+div#solutionsContainer {
+    display: inline-block;
+    width: 280px;
+    min-height: 300px;
+    padding: 5px;
+    background-color: rgb(240, 240, 240);
+    border: 1px solid rgb(200, 200, 200);
+}
+
+div#solutionsLabel {
+    display: inline-block;
+    margin: 0 0 5px 0;
+}
