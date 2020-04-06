@@ -54,8 +54,8 @@ function displayCube()
 			moveSequenceBigCubes = "";
 			for (move of window.moveSequence) {
 				if (move.includes("-")) { // move has the form 2-4Rw' : take all the slices between the numbers
-					firstSliceNumber = move.match(/(\d+)/g)[0];
-					secondSliceNumber = move.match(/(\d+)/g)[1];
+					firstSliceNumber = move.match(/\d+/g)[0];
+					secondSliceNumber = move.match(/\d+/g)[1];
 					endOfMove = move.substring(move.match(/.*-\d+/g)[0].length).replace("w",""); // takes everything after second number
 					if (firstSliceNumber > secondSliceNumber) {
 						tmp = firstSliceNumber;
@@ -71,7 +71,16 @@ function displayCube()
 						}
 					}
 				} else if (/^\d+$/.test(move[0]) && !move.includes("w")) { // move has the the form 3R' : take only one slice
-					moveSequenceBigCubes += move;
+					moveSequenceBigCubes += move + " ";
+					firstSliceNumber = move.match(/^\d+/g)[0];
+					endOfMove = move.substring(move.match(/^\d+/g)[0].length)
+					if (firstSliceNumber > 1) {
+						if (endOfMove.includes("'")) {
+							moveSequenceBigCubes += firstSliceNumber - 1 + endOfMove.substring(0, endOfMove.length - 1) + " ";
+						} else {
+							moveSequenceBigCubes += firstSliceNumber - 1 + endOfMove + "' ";
+						}
+					}
 				} else {
 					moveSequenceBigCubes += move;
 				}
@@ -189,8 +198,10 @@ function parseMoves()
 		} else if (move.includes("-") && (!isCube || cubeSize < 4)) { // block slice moves are allowed only for cubes with size > 3
 			unrecognizedChars.push(move);
 		} else if (/^\d+$/.test(move[0]) && // restriction on slice moves
-			(!isCube || move.match(/^\d+/g)[0] >= cubeSize // slice number must be < cube size
-				|| (move.includes("-") && move.match(/\d+/g)[1] >= cubeSize) // if it exists, second slice number must be < cube size
+			(!isCube // slice moves are only for cubes
+				|| move.match(/^\d+/g)[0] >= cubeSize || move.match(/^\d+/g)[0] === "0" // 0 < slice number < cube size
+				|| (move.includes("-") && // if second slice number exists
+					(move.match(/\d+/g)[1] >= cubeSize || move.match(/\d+/g)[1] === "0")) // 0 < second slice number < cube size
 				|| move.includes("x") || move.includes("z") || move.includes("z"))) { // slice moves not allowed for rotations
 			unrecognizedChars.push(move);
 		} else {
