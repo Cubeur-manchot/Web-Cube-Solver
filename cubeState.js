@@ -10,24 +10,21 @@ class CubeState {
 		}
 	}
 	applyMove(move) {
-		console.log("Warning : applying move " + move + " doesn't work.")
+		console.log("Warning : applying move " + move + " doesn't work on puzzle " + window.eventName);
 	}
 	applyPermutation(permutation, type) {
 		for (let elementIndex in permutation) {
 			this.information[type][permutation[elementIndex]] = this.information[type][elementIndex];
 		}
 	}
-	applyOrientation(nbSides, orientation, type) {
+	/*applyOrientation(nbSides, orientation, type) {
 		for (let index in this.information[type]) {
 			this.information[type][index] = this.information[type][index] + orientation[index] % nbSides;
 		}
-	}
-	isSolved() {
+	}*/
+	/*isSolved() {
 		return false;
-	}
-	printCoucou() {
-		alert("coucou");
-	}
+	}*/
 }
 
 /* 1x1x1 : 6 slots, respectively containing U, F, R, D, B, L stickers in position 0, 1, 2, 3, 4, 5 */
@@ -74,7 +71,7 @@ class Cube1x1x1State extends CubeState {
 			super.applyMove(move);
 		}
 	}
-	isSolved() {
+	/*isSolved() {
 		return true; // 1x1x1 is always solved
-	}
+	}*/
 }

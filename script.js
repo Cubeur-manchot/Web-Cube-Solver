@@ -24,9 +24,6 @@ function updateEventName()
 {
 	let eventNameSelect = document.querySelector("select");
 	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
-	if (eventNameSelect[1] === "x") { // event is a cube
-
-	}
 }
 
 function createCubeAndApplySequence()
@@ -34,6 +31,8 @@ function createCubeAndApplySequence()
 	let cubeState;
 	if (window.eventName === "1x1x1") {
 		cubeState = new Cube1x1x1State();
+	} else {
+		cubeState = new CubeState();
 	}
 	cubeState.applySequence(window.moveSequence);
 }
@@ -70,7 +69,7 @@ function displayCube()
 
 function adjustMoveSequenceForCubeAnimations(moveSequence)
 {
-	let moveSequenceAdjusted = "", move, adjustedMove, firstSliceNumber, secondSliceNumber, endOfMove, tmp;
+	let moveSequenceAdjusted = "", move, adjustedMove, firstSliceNumber, secondSliceNumber, endOfMove;
 	if (moveSequence === []) {
 		return "";
 	}
@@ -80,11 +79,7 @@ function adjustMoveSequenceForCubeAnimations(moveSequence)
 			firstSliceNumber = move.match(/\d+/g)[0];
 			secondSliceNumber = move.match(/\d+/g)[1];
 			endOfMove = move.substring(firstSliceNumber.length + 1 + secondSliceNumber.length);
-			if (firstSliceNumber > secondSliceNumber) {
-				tmp = firstSliceNumber;
-				firstSliceNumber = secondSliceNumber;
-				secondSliceNumber = tmp;
-			}
+			[firstSliceNumber, secondSliceNumber] = [firstSliceNumber, secondSliceNumber].sort();
 			if (!endOfMove.includes("w")) { // if it has no "w", adds it at the right position
 				endOfMove = endOfMove[0] + "w" + endOfMove.substring(1);
 			}
@@ -97,23 +92,18 @@ function adjustMoveSequenceForCubeAnimations(moveSequence)
 		}
 		moveSequenceAdjusted += adjustedMove + " ";
 	}
-	// add "w" when necessary (2-4R)
-	return moveSequenceAdjusted.substring(0, moveSequenceAdjusted.length - 1);
+	return moveSequenceAdjusted.substring(0, moveSequenceAdjusted.length - 1); // remove space at last character
 }
 
 function adjustMoveSequenceForCubeImages(moveSequence)
 {
-	let moveSequenceBigCubes = "", move, firstSliceNumber, secondSliceNumber, tmp, endOfMove;
+	let moveSequenceBigCubes = "", move, firstSliceNumber, secondSliceNumber, endOfMove;
 	for (move of moveSequence) {
 		if (move.includes("-")) { // move has the form 2-4Rw' : take all the slices between the numbers
 			firstSliceNumber = move.match(/\d+/g)[0];
 			secondSliceNumber = move.match(/\d+/g)[1];
 			endOfMove = move.substring(move.match(/.*-\d+/g)[0].length).replace("w",""); // takes everything after second number
-			if (firstSliceNumber > secondSliceNumber) {
-				tmp = firstSliceNumber;
-				firstSliceNumber = secondSliceNumber;
-				secondSliceNumber = tmp;
-			}
+			[firstSliceNumber, secondSliceNumber] = [firstSliceNumber, secondSliceNumber].sort();
 			moveSequenceBigCubes += adjustTurnAngleForCubes(secondSliceNumber + endOfMove) + " ";
 			if (firstSliceNumber > 1) {
 				moveSequenceBigCubes += makeInnerMoveForBigCubeSliceMoves(firstSliceNumber, endOfMove) + " ";
@@ -300,4 +290,5 @@ function parseMoves()
 		parsedMovesHtmlTag.appendChild(createHtmlTagWithClassNameAndTextContent("div", "parsedMove", move));
 	}
 	window.moveSequence = fullyCheckedMovesArray;
+	createCubeAndApplySequence();
 }
