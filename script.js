@@ -37,8 +37,7 @@ function createCubeAndApplySequence()
 function displayCube()
 {
 	let cubeImageContainerHtmlTag = document.querySelector("div#cubeImageContainer"),
-		cubeImageHtmlTag = createHtmlTagWithId("img", "cubeImage"), src, moveSequence = window.moveSequence.join(' '),
-		moveSequenceBigCubes, move, firstSliceNumber, secondSliceNumber, tmp, endOfMove;
+		cubeImageHtmlTag = createHtmlTagWithId("img", "cubeImage"), src, moveSequence = window.moveSequence.join(' ');
 	if (window.eventName === "pyraminx") {
 		src = "";
 	} else if (window.eventName === "megaminx") {
@@ -50,49 +49,85 @@ function displayCube()
 	} else if (window.eventName === "clock") {
 		src = "";
 	} else if (window.eventName[1] === "x") { // NxNxN cubes
-		if (window.eventName[0] > 3) { // cube size > 3
-			moveSequenceBigCubes = "";
-			for (move of window.moveSequence) {
-				if (move.includes("-")) { // move has the form 2-4Rw' : take all the slices between the numbers
-					firstSliceNumber = move.match(/\d+/g)[0];
-					secondSliceNumber = move.match(/\d+/g)[1];
-					endOfMove = move.substring(move.match(/.*-\d+/g)[0].length).replace("w",""); // takes everything after second number
-					if (firstSliceNumber > secondSliceNumber) {
-						tmp = firstSliceNumber;
-						firstSliceNumber = secondSliceNumber;
-						secondSliceNumber = tmp;
-					}
-					moveSequenceBigCubes += secondSliceNumber + endOfMove + " ";
-					if (firstSliceNumber > 1) {
-						if (endOfMove.includes("'")) {
-							moveSequenceBigCubes += firstSliceNumber - 1 + endOfMove.substring(0, endOfMove.length - 1) + " ";
-						} else {
-							moveSequenceBigCubes += firstSliceNumber - 1 + endOfMove + "' ";
-						}
-					}
-				} else if (/^\d+$/.test(move[0]) && !move.includes("w")) { // move has the the form 3R' : take only one slice
-					moveSequenceBigCubes += move + " ";
-					firstSliceNumber = move.match(/^\d+/g)[0];
-					endOfMove = move.substring(move.match(/^\d+/g)[0].length)
-					if (firstSliceNumber > 1) {
-						if (endOfMove.includes("'")) {
-							moveSequenceBigCubes += firstSliceNumber - 1 + endOfMove.substring(0, endOfMove.length - 1) + " ";
-						} else {
-							moveSequenceBigCubes += firstSliceNumber - 1 + endOfMove + "' ";
-						}
-					}
-				} else {
-					moveSequenceBigCubes += move;
-				}
-			}
-			moveSequence = moveSequenceBigCubes; // overwrite basic move sequence
-		}
+		moveSequence = adjustMoveSequenceForCubes(window.moveSequence);
 		src = "http://cube.crider.co.uk/visualcube.php?fmt=png&bg=t&size=250&alg=x2" + moveSequence + "&pzl=" + window.eventName[0];
 	}
-
 	cubeImageHtmlTag.src = src;
 	cubeImageContainerHtmlTag.textContent = "";
 	cubeImageContainerHtmlTag.appendChild(cubeImageHtmlTag);
+}
+
+function adjustMoveSequenceForCubes(moveSequence)
+{
+	let moveSequenceBigCubes = "", move, firstSliceNumber, secondSliceNumber, tmp, endOfMove;
+	for (move of moveSequence) {
+		if (move.includes("-")) { // move has the form 2-4Rw' : take all the slices between the numbers
+			firstSliceNumber = move.match(/\d+/g)[0];
+			secondSliceNumber = move.match(/\d+/g)[1];
+			endOfMove = move.substring(move.match(/.*-\d+/g)[0].length).replace("w",""); // takes everything after second number
+			if (firstSliceNumber > secondSliceNumber) {
+				tmp = firstSliceNumber;
+				firstSliceNumber = secondSliceNumber;
+				secondSliceNumber = tmp;
+			}
+			moveSequenceBigCubes += adjustTurnAngleForCubes(secondSliceNumber + endOfMove) + " ";
+			if (firstSliceNumber > 1) {
+				moveSequenceBigCubes += makeInnerMoveForBigCubeSliceMoves(firstSliceNumber, endOfMove) + " ";
+			}
+		} else if (/^\d+$/.test(move[0]) && !move.includes("w")) { // move has the the form 3R' : take only one slice
+			moveSequenceBigCubes += adjustTurnAngleForCubes(move) + " ";
+			firstSliceNumber = move.match(/^\d+/g)[0];
+			endOfMove = move.substring(move.match(/^\d+/g)[0].length);
+			if (firstSliceNumber > 1) {
+				moveSequenceBigCubes += makeInnerMoveForBigCubeSliceMoves(firstSliceNumber, endOfMove) + " ";
+			}
+		} else {
+			moveSequenceBigCubes += adjustTurnAngleForCubes(move) + " ";
+		}
+	}
+	return moveSequenceBigCubes;
+}
+
+function makeInnerMoveForBigCubeSliceMoves(sliceNumber, endOfMove)
+{
+	if (endOfMove.includes("'")) {
+		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove.substring(0, endOfMove.length - 1));
+	} else {
+		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove + "'");
+	}
+}
+
+function adjustTurnAngleForCubes(move)
+{
+	let turnAngle, moveBegin, adjustedTurnAngle, hasApostrophe;
+	if (/\d/.test(move[move.length - 1])) { // last character is digit
+		turnAngle = move.match(/\d+$/)[0];
+		moveBegin = move.substring(0, move.length - turnAngle.length);
+		hasApostrophe = false;
+	} else if (move.length > 1 && move[move.length - 1] === "'" && /\d/.test(move[move.length - 2])) { // second last character is digit and last character is apostrophe
+		turnAngle = move.match(/\d+'$/)[0];
+		moveBegin = move.substring(0, move.length - turnAngle.length);
+		turnAngle = turnAngle.substring(0, turnAngle.length - 1); // remove apostrophe at the end
+		hasApostrophe = true;
+	} else { // no turn angle, nothing to do
+		return move;
+	}
+	adjustedTurnAngle = turnAngle % 4; // 0, 1, 2, 3
+	if (adjustedTurnAngle === 0) { // 0, no move should be made
+		return "";
+	} else if (adjustedTurnAngle === 3) { // 3, replace by '
+		if (hasApostrophe) {
+			return moveBegin;
+		} else {
+			return moveBegin + "'";
+		}
+	} else { // 1 or 2
+		if (hasApostrophe) {
+			return moveBegin + adjustedTurnAngle + "'";
+		} else {
+			return moveBegin + adjustedTurnAngle;
+		}
+	}
 }
 
 function parseMoves()
