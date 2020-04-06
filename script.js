@@ -188,8 +188,10 @@ function parseMoves()
 			unrecognizedChars.push(move);
 		} else if (move.includes("-") && (!isCube || cubeSize < 4)) { // block slice moves are allowed only for cubes with size > 3
 			unrecognizedChars.push(move);
-		} else if (/^\d+$/.test(move[0]) && // slice number are only allowed for cubes strictly bigger than slice number, and not for rotations
-			(!isCube || move[0] >= cubeSize || move.includes("x") || move.includes("z") || move.includes("z"))) {
+		} else if (/^\d+$/.test(move[0]) && // restriction on slice moves
+			(!isCube || move.match(/^\d+/g)[0] >= cubeSize // slice number must be < cube size
+				|| (move.includes("-") && move.match(/\d+/g)[1] >= cubeSize) // if it exists, second slice number must be < cube size
+				|| move.includes("x") || move.includes("z") || move.includes("z"))) { // slice moves not allowed for rotations
 			unrecognizedChars.push(move);
 		} else {
 			fullyCheckedMovesArray.push(move);
