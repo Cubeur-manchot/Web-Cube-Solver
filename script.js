@@ -17,6 +17,7 @@ function init()
 	window.admittedMoves["skewb"] = ["R", "U", "L", "B"];
 	window.eventName = "3x3x3";
 	window.moveSequence = [];
+	displayCube();
 }
 
 function updateEventName()
