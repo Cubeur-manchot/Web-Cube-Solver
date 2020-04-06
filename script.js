@@ -24,6 +24,9 @@ function updateEventName()
 {
 	let eventNameSelect = document.querySelector("select");
 	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
+	if (eventNameSelect[1] === "x") { // event is a cube
+
+	}
 }
 
 function createCubeAndApplySequence()
@@ -38,7 +41,9 @@ function createCubeAndApplySequence()
 function displayCube()
 {
 	let cubeImageContainerHtmlTag = document.querySelector("div#cubeImageContainer"),
-		cubeImageHtmlTag = createHtmlTagWithId("img", "cubeImage"), src, moveSequence = window.moveSequence.join(' ');
+		cubeImageHtmlTag = createHtmlTagWithId("img", "cubeImage"),
+		animationLinkHtmlTag = createHtmlTagWithId("a", "animationLink"),
+		src, moveSequence = window.moveSequence.join(' '), moveSequenceForAnimation = window.moveSequence.join(' ');
 	if (window.eventName === "pyraminx") {
 		src = "";
 	} else if (window.eventName === "megaminx") {
@@ -50,15 +55,53 @@ function displayCube()
 	} else if (window.eventName === "clock") {
 		src = "";
 	} else if (window.eventName[1] === "x") { // NxNxN cubes
-		moveSequence = adjustMoveSequenceForCubes(window.moveSequence);
+		moveSequence = adjustMoveSequenceForCubeImages(window.moveSequence);
 		src = "http://cube.crider.co.uk/visualcube.php?fmt=png&bg=t&size=250&alg=x2" + moveSequence + "&pzl=" + window.eventName[0];
+		moveSequenceForAnimation = adjustMoveSequenceForCubeAnimations(window.moveSequence);
+		animationLinkHtmlTag.href = "https://alg.cubing.net/?puzzle=" + window.eventName + "&setup=" + moveSequenceForAnimation;
+		animationLinkHtmlTag.title = "Animation";
 	}
 	cubeImageHtmlTag.src = src;
+	animationLinkHtmlTag.target = "_blank";
+	animationLinkHtmlTag.appendChild(cubeImageHtmlTag); // append image to link
 	cubeImageContainerHtmlTag.textContent = "";
-	cubeImageContainerHtmlTag.appendChild(cubeImageHtmlTag);
+	cubeImageContainerHtmlTag.appendChild(animationLinkHtmlTag); // append link to section
 }
 
-function adjustMoveSequenceForCubes(moveSequence)
+function adjustMoveSequenceForCubeAnimations(moveSequence)
+{
+	let moveSequenceAdjusted = "", move, adjustedMove, firstSliceNumber, secondSliceNumber, endOfMove, tmp;
+	if (moveSequence === []) {
+		return "";
+	}
+	for (move of moveSequence) {
+		adjustedMove = "";
+		if (move.includes("-")) {
+			firstSliceNumber = move.match(/\d+/g)[0];
+			secondSliceNumber = move.match(/\d+/g)[1];
+			endOfMove = move.substring(firstSliceNumber.length + 1 + secondSliceNumber.length);
+			if (firstSliceNumber > secondSliceNumber) {
+				tmp = firstSliceNumber;
+				firstSliceNumber = secondSliceNumber;
+				secondSliceNumber = tmp;
+			}
+			if (!endOfMove.includes("w")) { // if it has no "w", adds it at the right position
+				endOfMove = endOfMove[0] + "w" + endOfMove.substring(1);
+			}
+			adjustedMove = firstSliceNumber + "%26%2345%3B" + secondSliceNumber + endOfMove; // %26%2345%3B is alg.cubing.net code for "-" character
+		} else {
+			adjustedMove = move;
+		}
+		if (/\d/.test(adjustedMove[0])) { // slice number are only with upper case
+			adjustedMove = adjustedMove.toUpperCase().replace("W", "w");
+		}
+		moveSequenceAdjusted += adjustedMove + " ";
+	}
+	// add "w" when necessary (2-4R)
+	return moveSequenceAdjusted.substring(0, moveSequenceAdjusted.length - 1);
+}
+
+function adjustMoveSequenceForCubeImages(moveSequence)
 {
 	let moveSequenceBigCubes = "", move, firstSliceNumber, secondSliceNumber, tmp, endOfMove;
 	for (move of moveSequence) {
@@ -75,7 +118,7 @@ function adjustMoveSequenceForCubes(moveSequence)
 			if (firstSliceNumber > 1) {
 				moveSequenceBigCubes += makeInnerMoveForBigCubeSliceMoves(firstSliceNumber, endOfMove) + " ";
 			}
-		} else if (/^\d+$/.test(move[0]) && !move.includes("w")) { // move has the the form 3R' : take only one slice
+		} else if (/\d/.test(move[0]) && !move.includes("w")) { // move has the the form 3R' : take only one slice
 			moveSequenceBigCubes += adjustTurnAngleForCubes(move) + " ";
 			firstSliceNumber = move.match(/^\d+/g)[0];
 			endOfMove = move.substring(move.match(/^\d+/g)[0].length);
@@ -92,9 +135,9 @@ function adjustMoveSequenceForCubes(moveSequence)
 function makeInnerMoveForBigCubeSliceMoves(sliceNumber, endOfMove)
 {
 	if (endOfMove.includes("'")) {
-		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove.substring(0, endOfMove.length - 1));
+		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove.toUpperCase().replace("W", "w").substring(0, endOfMove.length - 1));
 	} else {
-		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove + "'");
+		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove.toUpperCase().replace("W", "w") + "'");
 	}
 }
 
