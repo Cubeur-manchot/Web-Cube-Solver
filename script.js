@@ -61,10 +61,15 @@ function displayCube()
 		animationLinkHtmlTag.title = "Animation";
 	}
 	cubeImageHtmlTag.src = src;
-	animationLinkHtmlTag.target = "_blank";
-	animationLinkHtmlTag.appendChild(cubeImageHtmlTag); // append image to link
-	cubeImageContainerHtmlTag.textContent = "";
-	cubeImageContainerHtmlTag.appendChild(animationLinkHtmlTag); // append link to section
+	if (animationLinkHtmlTag.href !== "") {
+		animationLinkHtmlTag.target = "_blank";
+		animationLinkHtmlTag.appendChild(cubeImageHtmlTag); // append image to link
+		cubeImageContainerHtmlTag.textContent = "";
+		cubeImageContainerHtmlTag.appendChild(animationLinkHtmlTag); // append link to section
+	} else {
+		cubeImageContainerHtmlTag.textContent = "";
+		cubeImageContainerHtmlTag.appendChild(cubeImageHtmlTag); // only append image to section
+	}
 }
 
 function adjustMoveSequenceForCubeAnimations(moveSequence)
