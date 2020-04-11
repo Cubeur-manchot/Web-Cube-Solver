@@ -4,6 +4,15 @@ class CubeState {
 	constructor() {
 		this.information = []; // contains all permutation cycles and orientation arrays
 	}
+	clone() {
+		return (new CubeState()).cloneFrom(this);
+	}
+	cloneFrom(cubeState) {
+		 for (let informationType in cubeState.information) {
+		 	this.information[informationType] = cubeState.information[informationType].map(x => x);
+		 }
+		 return this;
+	}
 	applySequence(sequence) { // apply a sequence to current state
 		for (let move of sequence) {
 			this.applyMove(move);
@@ -22,16 +31,23 @@ class CubeState {
 			this.information[type][index] = this.information[type][index] + orientation[index] % nbSides;
 		}
 	}*/
-	/*isSolved() {
+	isSolved() {
 		return false;
-	}*/
+	}
 }
 
-/* 1x1x1 : 6 slots, respectively containing U, F, R, D, B, L stickers in position 0, 1, 2, 3, 4, 5 */
+/* 1x1x1 :
+["cube orientation"]
+[0, 1, 2, 3, 4, 5]
+[U, F, R, D, B, L]
+*/
 class Cube1x1x1State extends CubeState {
 	constructor() {
 		super();
 		this.information["cube orientation"] = [0, 1, 2, 3, 4, 5];
+	}
+	clone() {
+		return (new Cube1x1x1State()).cloneFrom(this);
 	}
 	applyMove(move) {
 		let permutationToApply, parsedRotationAngle, moveRotationAngle, cleanMove;
@@ -71,7 +87,7 @@ class Cube1x1x1State extends CubeState {
 			super.applyMove(move);
 		}
 	}
-	/*isSolved() {
+	isSolved() {
 		return true; // 1x1x1 is always solved
-	}*/
+	}
 }

@@ -99,6 +99,11 @@ a#animationLink {
     margin: 0;
 }
 
+button#solveButton {
+    display: inline-block;
+    margin: 15px;
+}
+
 div#solutionsContainer {
     display: inline-block;
     width: 280px;
