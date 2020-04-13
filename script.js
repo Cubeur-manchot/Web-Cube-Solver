@@ -53,7 +53,7 @@ function init()
 
 function updateEventName()
 {
-	let eventNameSelect = document.querySelector("select");
+	let eventNameSelect = document.querySelector("select#eventNameSelect");
 	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
 }
 
@@ -73,34 +73,49 @@ function createCubeAndApplySequence()
 
 function solveCube()
 {
-	let solutionContainerHtmlTag = document.querySelector("div#solutionsContainer"), solutionSequence = [], dateBegin, dateEnd;
+	let solutionContainerHtmlTag = document.querySelector("div#solutionsContainer"),
+		chosenAlgorithm, algorithmName, solutionSequence = [], dateBegin, dateEnd;
 	parseMoves(); // force re-parsing if event changed since last parse
 	displayCube();
 	solutionContainerHtmlTag.textContent = "";
 	if (window.currentCubeState.isSolved()) {
 		alert(window.eventName + " is already solved");
-	} else {
-		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
-		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Searching..."));
-		dateBegin = new Date();
-		solutionSequence = solveMoveOptimalBreadthFirst(); // only possible choice for the moment
-		dateEnd = new Date();
-		solutionContainerHtmlTag.textContent = "";
-		if (solutionSequence[0] === "Error: pool length exceeded") {
-			alert("No solution found, pool length (" + window.maxPoolLength + ") was exceeded");
-		} else {
-			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
-			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Length : " + solutionSequence.length));
-			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Sequence : " + solutionSequence.join(" ")));
-			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Time : " + (dateEnd.getTime() - dateBegin.getTime()) + "ms"));
-		}
+		return;
 	}
+	solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
+	solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Searching..."));
+	chosenAlgorithm = getChosenAlgorithm();
+	dateBegin = new Date();
+	if (chosenAlgorithm === "simpleMoveOptimalBreadthFirst") {
+		solutionSequence = solveMoveOptimalBreadthFirst();
+		algorithmName = "Move Optimal Breadth First Search"
+	} else if (chosenAlgorithm === "improvedMoveOptimalBreadthFirst") {
+		solutionSequence = solveMoveOptimalBreadthFirstImproved();
+		algorithmName = "Move Optimal Breadth First Search with finish acceleration";
+	} else {
+		alert("Error : algorithm '" + chosenAlgorithm + "' isn't implemented");
+		return;
+	}
+	dateEnd = new Date();
+	solutionContainerHtmlTag.textContent = "";
+	if (solutionSequence[0] === "Error: pool length exceeded") {
+		alert("No solution found, pool length (" + window.maxPoolLength + ") was exceeded");
+	} else {
+		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[" + algorithmName + "]"));
+		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Length : " + solutionSequence.length));
+		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Sequence : " + solutionSequence.join(" ")));
+		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Time : " + (dateEnd.getTime() - dateBegin.getTime()) + "ms"));
+	}
+}
+
+function solveMoveOptimalBreadthFirstImproved()
+{
+	return solveMoveOptimalBreadthFirst();
 }
 
 function solveMoveOptimalBreadthFirst()
 {
 	let cubeStatePool = [{state: window.currentCubeState, moveSequence: []}], nextCubeStatePool = [],
-		cubeStateHashMapPool = [], nextCubeStateHashMapPool = [],
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
 		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence;
 	while (cubeStatePool.length < window.maxPoolLength) {
@@ -149,7 +164,7 @@ function displayCube()
 		src = "";
 	} else if (window.eventName[1] === "x") { // NxNxN cubes
 		moveSequence = adjustMoveSequenceForCubeImages(window.moveSequence);
-		src = "http://cube.crider.co.uk/visualcube.php?fmt=png&bg=t&size=250&alg=x2" + moveSequence + "&pzl=" + window.eventName[0];
+		src = "http://cube.crider.co.uk/visualcube.php?fmt=png&bg=t&size=280&alg=x2" + moveSequence + "&pzl=" + window.eventName[0];
 		moveSequenceForAnimation = adjustMoveSequenceForCubeAnimations(window.moveSequence);
 		animationLinkHtmlTag.href = "https://alg.cubing.net/?puzzle=" + window.eventName + "&setup=" + moveSequenceForAnimation;
 		animationLinkHtmlTag.title = "Animation";
@@ -429,4 +444,13 @@ function checkFacePermutation(faceToCheck, associationTable)
 	return associationTable[faceToCheck[0]] === faceToCheck[1]
 		&& associationTable[faceToCheck[1]] === faceToCheck[2]
 		&& associationTable[faceToCheck[2]] === faceToCheck[3];
+}
+
+function getChosenAlgorithm()
+{
+	for (let algorithmChoice of document.querySelector("form#solvingAlgorithmChooserForm").querySelectorAll("input")) {
+		if (algorithmChoice.checked) {
+			return algorithmChoice.value;
+		}
+	}
 }

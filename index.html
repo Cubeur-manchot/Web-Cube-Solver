@@ -33,10 +33,17 @@
         <button id="parseMoveButton" onclick="parseMoves(); displayCube();">Parse</button>
         <div id="parsedMovesLabel">Parsed moves :</div>
         <div id="parsedMoves"></div>
+        <form id="solvingAlgorithmChooserForm">
+            <label id="solvingAlgorithmLabel">Choose solving algorithm :</label>
+            <br><input type="radio" id="simpleMoveOptimalBreadthFirst" name="solvingAlgorithmChooser" class="solvingAlgorithmChoice" value="simpleMoveOptimalBreadthFirst">
+            <label for="simpleMoveOptimalBreadthFirst">Move optimal breadth first (simple)</label>
+            <br><input type="radio" id="improvedMoveOptimalBreadthFirst" name="solvingAlgorithmChooser" class="solvingAlgorithmChoice" value="improvedMoveOptimalBreadthFirst" checked>
+            <label for="improvedMoveOptimalBreadthFirst">Move optimal breadth first (improved)</label>
+        </form>
+        <button id="solveButton" onclick="solveCube();">Solve</button>
     </section>
     <section id="middleColumn" class="column">
         <div id="cubeImageContainer"></div>
-        <button id="solveButton" onclick="solveCube();">Solve</button>
     </section>
     <section id="rightColumn" class="column">
         <div id="solutionsLabel">Solution(s) :</div>
