@@ -19,7 +19,7 @@ function init()
 
 	// generating moves to solve each puzzle
 	window.generatingMoves = [];
-	window.generatingMoves["2x2x2"] = {moves: ["R", "U", "F", "L", "D", "B"], senses: ["", "'", "2"]};
+	window.generatingMoves["2x2x2"] = {moves: ["R", "U", "F"], senses: ["", "'", "2"]};
 	window.generatingMoves["3x3x3"] = {moves: ["R", "U", "F", "L", "D", "B"], senses: ["", "'", "2"]};
 	window.generatingMoves["4x4x4"] = {moves: ["R", "U", "F", "L", "D", "B"], senses: ["", "'", "2"]};
 	window.generatingMoves["5x5x5"] = {moves: ["R", "U", "F", "L", "D", "B"], senses: ["", "'", "2"]};
@@ -41,8 +41,9 @@ function init()
 	window.godsNumber["skewb"] = 11;
 
 	// general settings
-	window.maxPoolLength = 10000;
+	window.maxPoolLength = 10000000;
 	window.maxDepth = 15;
+	window.associationTableFor2x2 = [3, 2, 4, 5, 7, 6, 0, 1];
 
 	// default puzzle
 	window.eventName = "3x3x3";
@@ -61,6 +62,8 @@ function createCubeAndApplySequence()
 	let cubeState;
 	if (window.eventName === "1x1x1") {
 		cubeState = new Cube1x1x1State();
+	} else if (window.eventName === "2x2x2") {
+		cubeState = new Cube2x2x2State();
 	} else {
 		cubeState = new CubeState();
 	}
@@ -70,15 +73,18 @@ function createCubeAndApplySequence()
 
 function solveCube()
 {
-	let solutionContainerHtmlTag = document.querySelector("div#solutionsContainer"), solutionSequence = [], textContent = "";
+	let solutionContainerHtmlTag = document.querySelector("div#solutionsContainer"), solutionSequence = [];
 	parseMoves(); // force re-parsing if event changed since last parse
 	displayCube();
 	solutionContainerHtmlTag.textContent = "";
 	if (window.currentCubeState.isSolved()) {
 		alert(window.eventName + " is already solved");
 	} else {
-	solutionSequence = solveMoveOptimalBreadthFirst(); // only possible choice for the moment
-		if (solutionSequence === ["Error: pool length exceeded"]) {
+		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
+		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Searching..."));
+		solutionSequence = solveMoveOptimalBreadthFirst(); // only possible choice for the moment
+		solutionContainerHtmlTag.textContent = "";
+		if (solutionSequence[0] === "Error: pool length exceeded") {
 			alert("No solution found, pool length (" + window.maxPoolLength + ") was exceeded");
 		} else {
 			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
@@ -380,4 +386,43 @@ function parseMoves()
 	}
 	window.moveSequence = fullyCheckedMovesArray;
 	createCubeAndApplySequence();
+}
+
+function arraysAreEquals(firstArray, secondArray)
+{
+	for (let i in firstArray) {
+		if (firstArray[i] !== secondArray[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function makeCleanMove(move)
+{
+	let parsedRotationAngle, moveRotationAngle;
+	if (move.includes("'")) {
+		parsedRotationAngle = move.substring(1, move.length - 1);
+		if (parsedRotationAngle === "") {
+			moveRotationAngle = 3;
+		} else {
+			moveRotationAngle = (4 - (parsedRotationAngle % 4)) % 4;
+		}
+		return move[0] + moveRotationAngle;
+	} else {
+		parsedRotationAngle = move.substring(1);
+		if (parsedRotationAngle === "") {
+			moveRotationAngle = 1;
+		} else {
+			moveRotationAngle = parsedRotationAngle % 4;
+		}
+		return move[0] + moveRotationAngle;
+	}
+}
+
+function checkFacePermutation(faceToCheck, associationTable)
+{
+	return associationTable[faceToCheck[0]] === faceToCheck[1]
+		&& associationTable[faceToCheck[1]] === faceToCheck[2]
+		&& associationTable[faceToCheck[2]] === faceToCheck[3];
 }
