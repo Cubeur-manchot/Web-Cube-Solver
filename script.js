@@ -73,7 +73,7 @@ function createCubeAndApplySequence()
 
 function solveCube()
 {
-	let solutionContainerHtmlTag = document.querySelector("div#solutionsContainer"), solutionSequence = [];
+	let solutionContainerHtmlTag = document.querySelector("div#solutionsContainer"), solutionSequence = [], dateBegin, dateEnd;
 	parseMoves(); // force re-parsing if event changed since last parse
 	displayCube();
 	solutionContainerHtmlTag.textContent = "";
@@ -82,7 +82,9 @@ function solveCube()
 	} else {
 		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
 		solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Searching..."));
+		dateBegin = new Date();
 		solutionSequence = solveMoveOptimalBreadthFirst(); // only possible choice for the moment
+		dateEnd = new Date();
 		solutionContainerHtmlTag.textContent = "";
 		if (solutionSequence[0] === "Error: pool length exceeded") {
 			alert("No solution found, pool length (" + window.maxPoolLength + ") was exceeded");
@@ -90,6 +92,7 @@ function solveCube()
 			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "[Move Optimal Breadth First Search]"));
 			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Length : " + solutionSequence.length));
 			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Sequence : " + solutionSequence.join(" ")));
+			solutionContainerHtmlTag.appendChild(createHtmlTagWithTextContent("div", "Time : " + (dateEnd.getTime() - dateBegin.getTime()) + "ms"));
 		}
 	}
 }
@@ -97,6 +100,7 @@ function solveCube()
 function solveMoveOptimalBreadthFirst()
 {
 	let cubeStatePool = [{state: window.currentCubeState, moveSequence: []}], nextCubeStatePool = [],
+		cubeStateHashMapPool = [], nextCubeStateHashMapPool = [],
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
 		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence;
 	while (cubeStatePool.length < window.maxPoolLength) {
