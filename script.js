@@ -197,7 +197,7 @@ function generateHashMapNearestStates(maxDepth)
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
 		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence, hashValue;
 	for (cubeOrientation of cubeOrientations) {
-		cubeStatePool = [{state: createCube(), moveSequence: cubeOrientation}];
+		cubeStatePool = [{state: createCube(), moveSequence: []}];
 		cubeStatePool[0].state.applySequence(cubeOrientation);
 		hashMapResult[cubeStatePool[0].state.hashPosition()] = {cost: 0, solution: []};
 		for (let depth = 1; depth <= maxDepth; depth++) {
