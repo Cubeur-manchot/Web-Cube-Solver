@@ -110,11 +110,6 @@ function solveCube()
 
 function solveMoveOptimalBreadthFirstImproved(cubeState)
 {
-	if (window.hashMapNearestPositions === undefined) {
-		if (window.eventName === "2x2x2") {
-			generateHashMapNearestStates(5);
-		}
-	}
 	let cubeStatePool = [{state: cubeState, moveSequence: []}], nextCubeStatePool = [], nearCubeStatePool = [],
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
 		currentCubeStateWithMoveSequence, currentCubeState, currentMoveSequence, generatingMove, generatingSense,
@@ -385,6 +380,12 @@ function parseMoves()
 		// booleans
 		hasSliceNumber, hasMinus, minusIsClosed, hasBaseMove, hasTurnAngle, isCube;
 
+	// generate nearest positions table if needed
+	if (window.hashMapNearestPositions === undefined) {
+		if (window.eventName === "2x2x2") {
+			generateHashMapNearestStates(5);
+		}
+	}
 	// cut with spaces
 	while(movesString.includes(" ")) {
 		indexOfSpace = movesString.indexOf(" ");
