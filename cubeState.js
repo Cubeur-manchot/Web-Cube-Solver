@@ -39,6 +39,26 @@ class CubeState {
 	hashPosition() {
 		return 0;
 	}
+	makeCleanMove(move) { // returns moves of the form R1, R2, R3, U1, U2, U3, F1, ...
+		let parsedRotationAngle, moveRotationAngle;
+		if (move.includes("'")) {
+			parsedRotationAngle = move.substring(1, move.length - 1);
+			if (parsedRotationAngle === "") {
+				moveRotationAngle = 3;
+			} else {
+				moveRotationAngle = (4 - (parsedRotationAngle % 4)) % 4;
+			}
+			return move[0] + moveRotationAngle;
+		} else {
+			parsedRotationAngle = move.substring(1);
+			if (parsedRotationAngle === "") {
+				moveRotationAngle = 1;
+			} else {
+				moveRotationAngle = parsedRotationAngle % 4;
+			}
+			return move[0] + moveRotationAngle;
+		}
+	}
 }
 
 /* 1x1x1 :
@@ -55,7 +75,7 @@ class Cube1x1x1State extends CubeState {
 		return (new Cube1x1x1State()).cloneFrom(this);
 	}
 	applyMove(move) {
-		let permutationToApply, cleanMove = makeCleanMove(move);
+		let permutationToApply, cleanMove = this.makeCleanMove(move);
 		if (cleanMove === "x1") { // x
 			permutationToApply = [4, 0, 2, 1, 3, 5];
 		} else if (cleanMove === "x2") { // x2
@@ -112,7 +132,7 @@ class Cube2x2x2State extends CubeState {
 	}
 	applyMove(move) {
 		let permutationToApply, orientationToApply, cleanMove;
-		cleanMove = makeCleanMove(move);
+		cleanMove = this.makeCleanMove(move);
 		if (cleanMove === "x1") {
 			permutationToApply = [7, 6, 5, 4, 2, 3, 0, 1];
 			orientationToApply = [1, 1, 2, 2, 1, 1, 2, 2];
