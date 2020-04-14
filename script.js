@@ -55,6 +55,7 @@ function updateEventName()
 {
 	let eventNameSelect = document.querySelector("select#eventNameSelect");
 	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
+	window.hashMapNearestPositions = undefined; // discard nearest position table
 }
 
 function createCube()
