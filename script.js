@@ -41,7 +41,7 @@ function init()
 	window.godsNumber["skewb"] = 11;
 
 	// general settings
-	window.maxPoolLength = 10000000;
+	window.maxPoolLength = 1000000;
 	window.maxDepth = 15;
 	window.associationTableFor2x2 = [3, 2, 4, 5, 7, 6, 0, 1];
 
@@ -57,7 +57,7 @@ function updateEventName()
 	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
 }
 
-function createCubeAndApplySequence()
+function createCube()
 {
 	let cubeState;
 	if (window.eventName === "1x1x1") {
@@ -67,8 +67,7 @@ function createCubeAndApplySequence()
 	} else {
 		cubeState = new CubeState();
 	}
-	cubeState.applySequence(window.moveSequence);
-	window.currentCubeState = cubeState;
+	return cubeState;
 }
 
 function solveCube()
@@ -87,10 +86,10 @@ function solveCube()
 	chosenAlgorithm = getChosenAlgorithm();
 	dateBegin = new Date();
 	if (chosenAlgorithm === "simpleMoveOptimalBreadthFirst") {
-		solutionSequence = solveMoveOptimalBreadthFirst();
+		solutionSequence = solveMoveOptimalBreadthFirst(window.currentCubeState);
 		algorithmName = "Move Optimal Breadth First Search"
 	} else if (chosenAlgorithm === "improvedMoveOptimalBreadthFirst") {
-		solutionSequence = solveMoveOptimalBreadthFirstImproved();
+		solutionSequence = solveMoveOptimalBreadthFirstImproved(window.currentCubeState);
 		algorithmName = "Move Optimal Breadth First Search with finish acceleration";
 	} else {
 		alert("Error : algorithm '" + chosenAlgorithm + "' isn't implemented");
@@ -108,28 +107,74 @@ function solveCube()
 	}
 }
 
-function solveMoveOptimalBreadthFirstImproved()
+function solveMoveOptimalBreadthFirstImproved(cubeState)
 {
-	return solveMoveOptimalBreadthFirst();
-}
-
-function solveMoveOptimalBreadthFirst()
-{
-	let cubeStatePool = [{state: window.currentCubeState, moveSequence: []}], nextCubeStatePool = [],
+	if (window.eventName === "2x2x2") {
+		generateHashMapNearestStates(5);
+	}
+	let cubeStatePool = [{state: cubeState, moveSequence: []}], nextCubeStatePool = [], nearCubeStatePool = [],
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
-		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence;
+		currentCubeStateWithMoveSequence, currentCubeState, currentMoveSequence, generatingMove, generatingSense,
+		newMove, newCubeState, newMoveSequence, newCubeStateWithMoveSequence, hashValue, cost, minimalCost, minimalCubeStateWithMoveSequence;
 	while (cubeStatePool.length < window.maxPoolLength) {
 		nextCubeStatePool = [];
-		for (cubeStateWithMoveSequence of cubeStatePool) {
-			moveSequence = cubeStateWithMoveSequence.moveSequence;
-			cubeState = cubeStateWithMoveSequence.state;
+		for (currentCubeStateWithMoveSequence of cubeStatePool) {
+			currentMoveSequence = currentCubeStateWithMoveSequence.moveSequence;
+			currentCubeState = currentCubeStateWithMoveSequence.state;
 			for (generatingMove of generatingMoves) {
 				if (moveSequence[moveSequence.length] !== generatingMove) // can be fused with last move -> don't generate
 				{
 					for (generatingSense of generatingSenses) {
 						newMove = generatingMove + generatingSense;
-						newCubeState = cubeState.clone();
-						newMoveSequence = moveSequence.map(x => x);
+						newCubeState = currentCubeState.clone();
+						newMoveSequence = currentMoveSequence.map(x => x);
+						newCubeState.applyMove(newMove);
+						newMoveSequence.push(newMove);
+						hashValue = newCubeState.hashPosition();
+						newCubeStateWithMoveSequence = {state: newCubeState, moveSequence: newMoveSequence};
+						if (window.hashMapNearestPositions[hashValue] !== undefined) { // if cube state is in nearest positions table
+							nearCubeStatePool.push(newCubeStateWithMoveSequence);
+						} else {
+							nextCubeStatePool.push(newCubeStateWithMoveSequence);
+						}
+					}
+				}
+			}
+		}
+		if (nearCubeStatePool.length !== 0) {
+			minimalCost = 1000;
+			for (currentCubeStateWithMoveSequence of nearCubeStatePool) {
+				cost = window.hashMapNearestPositions[currentCubeStateWithMoveSequence.state.hashPosition()].cost;
+				if (cost < minimalCost) {
+					minimalCubeStateWithMoveSequence = currentCubeStateWithMoveSequence;
+					minimalCost = cost;
+				}
+			}
+			return minimalCubeStateWithMoveSequence.moveSequence.concat(
+				window.hashMapNearestPositions[minimalCubeStateWithMoveSequence.state.hashPosition()].solution);
+		}
+		cubeStatePool = nextCubeStatePool.map(x => x);
+	}
+	return ["Error: pool length exceeded"];
+}
+
+function solveMoveOptimalBreadthFirst(cubeState)
+{
+	let cubeStatePool = [{state: cubeState, moveSequence: []}], nextCubeStatePool = [],
+		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
+		currentCubeStateWithMoveSequence, currentCubeState, currentMoveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence;
+	while (cubeStatePool.length < window.maxPoolLength) {
+		nextCubeStatePool = [];
+		for (currentCubeStateWithMoveSequence of cubeStatePool) {
+			currentMoveSequence = currentCubeStateWithMoveSequence.moveSequence;
+			currentCubeState = currentCubeStateWithMoveSequence.state;
+			for (generatingMove of generatingMoves) {
+				if (currentMoveSequence[moveSequence.length] !== generatingMove) // can be fused with last move -> don't generate
+				{
+					for (generatingSense of generatingSenses) {
+						newMove = generatingMove + generatingSense;
+						newCubeState = currentCubeState.clone();
+						newMoveSequence = currentMoveSequence.map(x => x);
 						newCubeState.applyMove(newMove);
 						newMoveSequence.push(newMove);
 						if (newCubeState.isSolved()) {
@@ -144,6 +189,50 @@ function solveMoveOptimalBreadthFirst()
 		cubeStatePool = nextCubeStatePool.map(x => x);
 	}
 	return ["Error: pool length exceeded"];
+}
+
+function generateHashMapNearestStates(maxDepth)
+{
+	let cubeStatePool = [], nextCubeStatePool = [], hashMapResult = [], cubeOrientation,
+		cubeOrientations = [[], ["y"], ["y'"], ["y2"], ["x"], ["x", "y"], ["x", "y'"], ["x", "y2"], ["x'"], ["x'", "y"], ["x'", "y'"], ["x'", "y2"],
+			["x2"], ["x2", "y"], ["x2", "y'"], ["z2"], ["z"], ["z", "y"], ["z", "y'"], ["z", "y2"], ["z'"], ["z'", "y"], ["z'", "y'"], ["z'", "y2"]],
+		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
+		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence, hashValue;
+	for (cubeOrientation of cubeOrientations) {
+		cubeStatePool = [{state: createCube(), moveSequence: cubeOrientation}];
+		cubeStatePool[0].state.applySequence(cubeOrientation);
+		hashMapResult[cubeStatePool[0].state.hashPosition()] = {cost: 0, solution: []};
+		for (let depth = 1; depth <= maxDepth; depth++) {
+			nextCubeStatePool = [];
+			for (cubeStateWithMoveSequence of cubeStatePool) {
+				moveSequence = cubeStateWithMoveSequence.moveSequence;
+				cubeState = cubeStateWithMoveSequence.state;
+				for (generatingMove of generatingMoves) {
+					if (moveSequence[0] === undefined || moveSequence[0][0] !== generatingMove) // don't generate if can be fused with last move
+					{
+						for (generatingSense of generatingSenses) {
+							newMove = generatingMove + generatingSense;
+							newCubeState = cubeState.clone();
+							newMoveSequence = moveSequence.map(x => x);
+							newCubeState.applyMove(newMove);
+							newMoveSequence.unshift(invertMove(newMove, true));
+							hashValue = newCubeState.hashPosition();
+							if (hashMapResult[hashValue] === undefined) {
+								hashMapResult[hashValue] = {cost: depth, solution: newMoveSequence};
+							}/* else {
+								console.log("can't hash " + newMoveSequence + " at " + hashValue + " because " + hashMapResult[hashValue].solution + " is already there")
+							}*/
+							if (depth !== maxDepth) {
+								nextCubeStatePool.push({state: newCubeState, moveSequence: newMoveSequence});
+							}
+						}
+					}
+				}
+			}
+			cubeStatePool = nextCubeStatePool.map(x => x);
+		}
+	}
+	window.hashMapNearestPositions = hashMapResult;
 }
 
 function displayCube()
@@ -404,7 +493,8 @@ function parseMoves()
 		parsedMovesHtmlTag.appendChild(createHtmlTagWithClassNameAndTextContent("div", "parsedMove", move));
 	}
 	window.moveSequence = fullyCheckedMovesArray;
-	createCubeAndApplySequence();
+	window.currentCubeState = createCube();
+	window.currentCubeState.applySequence(window.moveSequence);
 }
 
 function arraysAreEquals(firstArray, secondArray)
@@ -452,5 +542,16 @@ function getChosenAlgorithm()
 		if (algorithmChoice.checked) {
 			return algorithmChoice.value;
 		}
+	}
+}
+
+function invertMove(move, isEvenSidedPuzzle)
+{
+	if (move[move.length - 1] === "'") {
+		return move.substring(0, move.length - 1); // remove apostrophe at the end
+	} else if (isEvenSidedPuzzle && move[move.length - 1] === "2") {
+		return move; // keep move identical
+	} else {
+		return move + "'"; // add apostrophe at the end
 	}
 }

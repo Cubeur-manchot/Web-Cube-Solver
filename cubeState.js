@@ -36,6 +36,9 @@ class CubeState {
 	isSolved() {
 		return false;
 	}
+	hashPosition() {
+		return 0;
+	}
 }
 
 /* 1x1x1 :
@@ -239,5 +242,23 @@ class Cube2x2x2State extends CubeState {
 		} else {
 			return false;
 		}
+	}
+	hashPosition() {
+		let cornerPermutation = this.information["corner permutation"], cornerOrientation = this.information["corner orientation"],
+			shiftedReverseFactorials = [5040, 720, 120, 24, 6, 2, 1], powersOfThree = [2187, 729, 243, 81, 9, 3, 1],
+			hashPermutation = 0, hashOrientation = 0, index, index2, smallerAfterInPermutation;
+		for (index = 0; index < 7; index++) { // hashPermutation will be between 0 and 40319 (lexicographical order)
+			smallerAfterInPermutation = 0;
+			for (index2 = index + 1; index2 < 8; index2++) {
+				if (cornerPermutation[index2] < cornerPermutation[index]) {
+					smallerAfterInPermutation++;
+				}
+			}
+			hashPermutation += smallerAfterInPermutation*shiftedReverseFactorials[index];
+		}
+		for (index = 0; index < 7; index++) { // hashOrientation will be between 0 and 6560
+			hashOrientation += cornerOrientation[index]*powersOfThree[index];
+		}
+		return (6561 * hashPermutation + hashOrientation);
 	}
 }
