@@ -11,11 +11,63 @@ function getChosenAlgorithm() // look in form#solvingAlgorithmChooserForm for ch
 	}
 }
 
+function getChosenNotation() // look in form#notationChooserForm for chosen notation
+{
+	for (let notationChoice of document.querySelector("form#notationChooserForm").querySelectorAll("input")) {
+		if (notationChoice.checked) {
+			return notationChoice.value;
+		}
+	}
+}
+
 function updateEventName() // look in select#eventNameSelect for selected event
 {
-	let eventNameSelect = document.querySelector("select#eventNameSelect");
-	window.eventName = eventNameSelect.options[eventNameSelect.selectedIndex].value;
+	let eventNameSelectHtmlTag = document.querySelector("select#eventNameSelect"),
+		previousEventName = window.eventName, newEventName = eventNameSelectHtmlTag.options[eventNameSelectHtmlTag.selectedIndex].value;
+	window.eventName = newEventName;
+	if (newEventName === "skewb") { // since WCA and usual notation contradict each other, the user has to choose the one to use
+		addNotationChoiceForSkewb(eventNameSelectHtmlTag);
+	} else if (previousEventName === "skewb") { // remove notation choice when selecting something other than skewb
+		document.querySelector("form#notationToUseChooserForm").remove();
+	}
 	window.hashMapNearestPositions = undefined; // discard nearest position table
+}
+
+function addNotationChoiceForSkewb(eventNameSelectHtmlTag) // add simple radio choice for skewb notation (WCA or Algorithm)
+{
+	let notationToUseChooserFormHtmlTag, notationChoiceRadioButtonHtmlTag, notationChoiceLabelHtmlTag;
+	// form
+	notationToUseChooserFormHtmlTag = createHtmlTagWithId("form", "notationChooserForm");
+	// general label
+	notationToUseChooserFormHtmlTag.appendChild(createHtmlTagWithIdAndTextContent("label", "notationChooserLabel", "Choose notation :"));
+	// break line
+	notationToUseChooserFormHtmlTag.appendChild(createHtmlTag("br"));
+	// first radio button
+	notationChoiceRadioButtonHtmlTag = createHtmlTagWithIdAndClassName("input", "WCANotationChoice", "notationChoice");
+	notationChoiceRadioButtonHtmlTag.type = "radio";
+	notationChoiceRadioButtonHtmlTag.name = "notationChooser";
+	notationChoiceRadioButtonHtmlTag.value = "WCANotationChoice";
+	notationChoiceRadioButtonHtmlTag.checked = true;
+	notationToUseChooserFormHtmlTag.appendChild(notationChoiceRadioButtonHtmlTag);
+	// first label
+	notationChoiceLabelHtmlTag = createHtmlTagWithClassNameAndTextContent("label", "notationChoiceLabel", "WCA (R, U, L, B)");
+	notationChoiceLabelHtmlTag.setAttribute("for", "WCANotationChoice");
+	notationToUseChooserFormHtmlTag.appendChild(notationChoiceLabelHtmlTag);
+	// break line
+	notationToUseChooserFormHtmlTag.appendChild(createHtmlTag("br"));
+	// second radio button
+	notationChoiceRadioButtonHtmlTag = createHtmlTagWithIdAndClassName("input", "algorithmNotationChoice", "notationChoice");
+	notationChoiceRadioButtonHtmlTag.type = "radio";
+	notationChoiceRadioButtonHtmlTag.name = "notationChooser";
+	notationChoiceRadioButtonHtmlTag.value = "algorithmNotationChoice";
+	notationChoiceRadioButtonHtmlTag.checked = false;
+	notationToUseChooserFormHtmlTag.appendChild(notationChoiceRadioButtonHtmlTag);
+	// second label
+	notationChoiceLabelHtmlTag = createHtmlTagWithClassNameAndTextContent("label", "notationChoiceLabel", "Algorithms (R, F, L, B, r, f, l, b)");
+	notationChoiceLabelHtmlTag.setAttribute("for", "algorithmNotationChoice");
+	notationToUseChooserFormHtmlTag.appendChild(notationChoiceLabelHtmlTag);
+	// append form
+	eventNameSelectHtmlTag.insertAdjacentElement("afterend", notationToUseChooserFormHtmlTag);
 }
 
 function parseMoves() // read input#movesToParse and transform the string in an array of moves
@@ -33,6 +85,10 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 		// booleans
 		hasSliceNumber, hasMinus, minusIsClosed, hasBaseMove, hasTurnAngle, isCube;
 
+	// adjust list of admitted moves for skewb if Algorithm notation is chosen
+	if (window.eventName === "skewb" && getChosenNotation() === "algorithmNotationChoice") {
+		listOfAdmittedMoves = ["R", "F", "L", "B", "r", "f", "l", "b"];
+	}
 	// generate nearest positions table if needed
 	if (window.hashMapNearestPositions === undefined) {
 		if (window.eventName === "2x2x2") {
@@ -106,7 +162,7 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 				}
 				hasBaseMove = true;
 				move = move + char;
-			} else if (char === "'") { // apostrophe happens only at the very end
+			} else if (char === "'") { // apostrophe appears only at the very end
 				move = move + char;
 			} else {
 				unrecognizedChars.push(char);
@@ -137,8 +193,8 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 			fullyCheckedMovesArray.push(move);
 		}
 	}
-
-	if (unrecognizedChars.length !== 0) { // print unrecognized characters
+	// print unrecognized characters
+	if (unrecognizedChars.length !== 0) {
 		alert("Warning, some characters were not well parsed" +
 			"\nOriginal sequence : " + moveStringBackup +
 			"\nParsed sequence : [" + movesArray + "]" +

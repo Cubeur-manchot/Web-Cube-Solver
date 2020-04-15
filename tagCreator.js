@@ -34,6 +34,14 @@ function createHtmlTagWithIdAndClassName(tagType, tagId, tagClassName) // create
 	return htmlTag;
 }
 
+function createHtmlTagWithIdAndTextContent(tagType, tagId, tagTextContent) // create simple HTML tag and set its id and text content
+{
+	let htmlTag = document.createElement(tagType);
+	htmlTag.id = tagId;
+	htmlTag.textContent = tagTextContent;
+	return htmlTag;
+}
+
 function createHtmlTagWithClassNameAndTextContent(tagType, tagClassName, tagTextContent) // create simple HTML tag and set its class and text content
 {
 	let htmlTag = document.createElement(tagType);
