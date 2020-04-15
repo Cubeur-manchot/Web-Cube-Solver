@@ -28,7 +28,7 @@ function updateEventName() // look in select#eventNameSelect for selected event
 	if (newEventName === "skewb") { // since WCA and usual notation contradict each other, the user has to choose the one to use
 		addNotationChooserForSkewb(eventNameSelectHtmlTag);
 	} else if (previousEventName === "skewb") { // remove notation choice when selecting something other than skewb
-		document.querySelector("form#notationToUseChooserForm").remove();
+		document.querySelector("form#notationChooserForm").remove();
 	}
 	window.hashMapNearestPositions = undefined; // discard nearest position table
 }
