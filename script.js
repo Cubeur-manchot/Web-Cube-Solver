@@ -55,6 +55,8 @@ function createCube() // create a CubeState object of the selected puzzle
 		cubeState = new Cube1x1x1State();
 	} else if (window.eventName === "2x2x2") {
 		cubeState = new Cube2x2x2State();
+	} else if (window.eventName === "skewb") {
+		cubeState = new SkewbState();
 	} else {
 		cubeState = new CubeState();
 	}

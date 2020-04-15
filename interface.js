@@ -70,6 +70,58 @@ function addNotationChooserForSkewb(eventNameSelectHtmlTag) // add simple radio 
 	eventNameSelectHtmlTag.insertAdjacentElement("afterend", notationToUseChooserFormHtmlTag);
 }
 
+function translateWCANotationToAlgorithmNotationForSkewb(moveSequence) // switch from WCA notation (R, U, L, B) to algorithm notation (R, F, L, B, r, f, l, b) for skewb
+{
+	let resultSequence = [];
+	for (let move of moveSequence) {
+		resultSequence.push(move.replace("R", "b").replace("B", "l").replace("L", "f").replace("U", "L"));
+	}
+	return resultSequence;
+}
+
+function translateAlgorithmNotationToWCANotationForSkewb(moveSequence) // switch from WCA notation (R, U, L, B) to algorithm notation (R, F, L, B, r, f, l, b) for skewb
+{
+	let resultSequence = [];
+	for (let move of moveSequence) {
+		if (move === "R") {
+			resultSequence.push("B");
+			resultSequence.push("x");
+			resultSequence.push("y");
+		} else if (move === "R'") {
+			resultSequence.push("B'");
+			resultSequence.push("y'");
+			resultSequence.push("x'");
+		} else if (move === "F") {
+			resultSequence.push("R");
+			resultSequence.push("y");
+			resultSequence.push("x'");
+		} else if (move === "F'") {
+			resultSequence.push("R'");
+			resultSequence.push("x");
+			resultSequence.push("y'");
+		} else if (move === "B") {
+			resultSequence.push("L");
+			resultSequence.push("y");
+			resultSequence.push("x");
+		} else if (move === "B'") {
+			resultSequence.push("L'");
+			resultSequence.push("x'");
+			resultSequence.push("y'");
+		} else if (move === "r") {
+			resultSequence.push("U");
+			resultSequence.push("y'");
+			resultSequence.push("x");
+		} else if (move === "r'") {
+			resultSequence.push("U'");
+			resultSequence.push("x'");
+			resultSequence.push("y");
+		} else {
+			resultSequence.push(move.replace("L", "U").replace("f", "L").replace("l", "B").replace("b", "R"));
+		}
+	}
+	return resultSequence;
+}
+
 function parseMoves() // read input#movesToParse and transform the string in an array of moves
 {
 	let // HTML tags
@@ -223,7 +275,12 @@ function displayCube() // creates an image (and animation link if possible) in d
 	} else if (window.eventName === "megaminx") {
 		src = "";
 	} else if (window.eventName === "skewb") {
-		src = "";
+		if (getChosenNotation() === "WCANotationChoice") {
+			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(translateWCANotationToAlgorithmNotationForSkewb(window.moveSequence));
+		} else {
+			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(window.moveSequence);
+		}
+		src = "http://cubiclealgdbimagegen.azurewebsites.net/generator?puzzle=skewb&alg=" + moveSequence;
 	} else if (window.eventName === "square one") {
 		src = "";
 	} else if (window.eventName === "clock") {
@@ -247,7 +304,7 @@ function displayCube() // creates an image (and animation link if possible) in d
 	}
 }
 
-function adjustMoveSequenceForCubeAnimations(moveSequence) // modify a move sequence for animation link to alg.cubing.net
+function adjustMoveSequenceForCubeAnimations(moveSequence) // modify a move sequence for animation link to https://alg.cubing.net/
 {
 	let moveSequenceAdjusted = "", move, adjustedMove, firstSliceNumber, secondSliceNumber, endOfMove;
 	if (moveSequence === []) {
@@ -275,6 +332,16 @@ function adjustMoveSequenceForCubeAnimations(moveSequence) // modify a move sequ
 	return moveSequenceAdjusted.substring(0, moveSequenceAdjusted.length - 1); // remove space at last character
 }
 
+function adjustMoveSequenceForThirdTurnPuzzlesImages(moveSequence) // modify a move sequence for image link on http://cubiclealgdbimagegen.azurewebsites.net/
+{
+	let moveSequenceResult = "", move;
+	for (move of moveSequence) {
+		moveSequenceResult += adjustTurnAngle(move, 3);
+	}
+	moveSequenceResult = moveSequenceResult.replace(/1/g, ""); // remove all "1" because some image generators don't support them
+	return moveSequenceResult;
+}
+
 function adjustMoveSequenceForCubeImages(moveSequence) // modify a move sequence for image link to visualCube.co.uk
 {
 	let moveSequenceBigCubes = "", move, firstSliceNumber, secondSliceNumber, endOfMove;
@@ -284,34 +351,34 @@ function adjustMoveSequenceForCubeImages(moveSequence) // modify a move sequence
 			secondSliceNumber = move.match(/\d+/g)[1];
 			endOfMove = move.substring(move.match(/.*-\d+/g)[0].length).replace("w",""); // takes everything after second number
 			[firstSliceNumber, secondSliceNumber] = [firstSliceNumber, secondSliceNumber].sort();
-			moveSequenceBigCubes += adjustTurnAngleForCubes(secondSliceNumber + endOfMove) + " ";
+			moveSequenceBigCubes += adjustTurnAngle(secondSliceNumber + endOfMove, 4) + " ";
 			if (firstSliceNumber > 1) {
 				moveSequenceBigCubes += makeInnerMoveForBigCubeSliceMoves(firstSliceNumber, endOfMove) + " ";
 			}
 		} else if (/\d/.test(move[0]) && !move.includes("w")) { // move has the the form 3R' : take only one slice
-			moveSequenceBigCubes += adjustTurnAngleForCubes(move) + " ";
+			moveSequenceBigCubes += adjustTurnAngle(move, 4) + " ";
 			firstSliceNumber = move.match(/^\d+/g)[0];
 			endOfMove = move.substring(move.match(/^\d+/g)[0].length);
 			if (firstSliceNumber > 1) {
 				moveSequenceBigCubes += makeInnerMoveForBigCubeSliceMoves(firstSliceNumber, endOfMove) + " ";
 			}
 		} else {
-			moveSequenceBigCubes += adjustTurnAngleForCubes(move) + " ";
+			moveSequenceBigCubes += adjustTurnAngle(move, 4) + " ";
 		}
 	}
 	return moveSequenceBigCubes;
 }
 
-function makeInnerMoveForBigCubeSliceMoves(sliceNumber, endOfMove) // create a second slice move for big cube inner slice moves, necessary for big cube images on visualcube.co.uk
+function makeInnerMoveForBigCubeSliceMoves(sliceNumber, endOfMove) // create a second slice move for big cube inner slice moves, necessary for big cube images on http://cube.crider.co.uk/
 {
 	if (endOfMove.includes("'")) {
-		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove.toUpperCase().replace("W", "w").substring(0, endOfMove.length - 1));
+		return adjustTurnAngle(sliceNumber - 1 + endOfMove.toUpperCase().replace("W", "w").substring(0, endOfMove.length - 1), 4);
 	} else {
-		return adjustTurnAngleForCubes(sliceNumber - 1 + endOfMove.toUpperCase().replace("W", "w") + "'");
+		return adjustTurnAngle(sliceNumber - 1 + endOfMove.toUpperCase().replace("W", "w") + "'", 4);
 	}
 }
 
-function adjustTurnAngleForCubes(move) // reduce overturning moves for cubes (R35' -> R3')
+function adjustTurnAngle(move, nbSides) // reduce overturning moves for cubes, pyraminx, skewb and megaminx
 {
 	let turnAngle, moveBegin, adjustedTurnAngle, hasApostrophe;
 	if (/\d/.test(move[move.length - 1])) { // last character is digit
@@ -323,17 +390,23 @@ function adjustTurnAngleForCubes(move) // reduce overturning moves for cubes (R3
 		moveBegin = move.substring(0, move.length - turnAngle.length);
 		turnAngle = turnAngle.substring(0, turnAngle.length - 1); // remove apostrophe at the end
 		hasApostrophe = true;
-	} else { // no turn angle, nothing to do
+	} else { // no turn angle, nothing to adjust
 		return move;
 	}
-	adjustedTurnAngle = turnAngle % 4; // 0, 1, 2, 3
+	adjustedTurnAngle = turnAngle % nbSides; // 0, 1, 2, 3 for cubes, 0, 1, 2 for pyraminx and skewb, 0, 1, 2, 3, 4 for megaminx
 	if (adjustedTurnAngle === 0) { // 0, no move should be made
 		return "";
-	} else if (adjustedTurnAngle === 3) { // 3, replace by '
+	} else if (adjustedTurnAngle === nbSides - 1) { // 3 for cubes, 2 for pyraminx and skewb, 4 for megaminx, replace by '
 		if (hasApostrophe) {
 			return moveBegin;
 		} else {
 			return moveBegin + "'";
+		}
+	} else if (nbSides === 5 && adjustedTurnAngle === nbSides - 2) { // 3 for megaminx, replace by 2'
+		if (hasApostrophe) {
+			return moveBegin + "2";
+		} else {
+			return moveBegin + "2'";
 		}
 	} else { // 1 or 2
 		if (hasApostrophe) {
