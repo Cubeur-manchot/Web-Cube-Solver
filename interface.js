@@ -26,14 +26,14 @@ function updateEventName() // look in select#eventNameSelect for selected event
 		previousEventName = window.eventName, newEventName = eventNameSelectHtmlTag.options[eventNameSelectHtmlTag.selectedIndex].value;
 	window.eventName = newEventName;
 	if (newEventName === "skewb") { // since WCA and usual notation contradict each other, the user has to choose the one to use
-		addNotationChoiceForSkewb(eventNameSelectHtmlTag);
+		addNotationChooserForSkewb(eventNameSelectHtmlTag);
 	} else if (previousEventName === "skewb") { // remove notation choice when selecting something other than skewb
 		document.querySelector("form#notationToUseChooserForm").remove();
 	}
 	window.hashMapNearestPositions = undefined; // discard nearest position table
 }
 
-function addNotationChoiceForSkewb(eventNameSelectHtmlTag) // add simple radio choice for skewb notation (WCA or Algorithm)
+function addNotationChooserForSkewb(eventNameSelectHtmlTag) // add simple radio choice for skewb notation (WCA or Algorithm)
 {
 	let notationToUseChooserFormHtmlTag, notationChoiceRadioButtonHtmlTag, notationChoiceLabelHtmlTag;
 	// form
