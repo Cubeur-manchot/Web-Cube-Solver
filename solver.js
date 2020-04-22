@@ -133,10 +133,8 @@ function generateHashMapNearestStates(maxDepth) // generate hash map of nearest 
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
 		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence, hashValue;
 	for (cubeOrientation of cubeOrientations) {
-		console.log("Cube Orientation : " + cubeOrientation);
 		cubeStatePool = [{state: createCube(), moveSequence: [cubeOrientation]}];
 		cubeStatePool[0].state.applySequence(cubeOrientation);
-		console.log("Hash : " + cubeStatePool[0].state.hashPosition());
 		hashMapResult[cubeStatePool[0].state.hashPosition()] = {cost: 0, solution: cubeOrientation};
 		for (let depth = 1; depth <= maxDepth; depth++) {
 			nextCubeStatePool = [];
