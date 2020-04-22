@@ -112,9 +112,6 @@ function solveMoveOptimalBreadthFirstImproved(cubeState) // same algorithm as ba
 					minimalCost = cost;
 				}
 			}
-			console.log("Solution begin : " + minimalCubeStateWithMoveSequence.moveSequence);
-			console.log("Solution end shortcut : " + window.hashMapNearestPositions[minimalCubeStateWithMoveSequence.state.hashPosition()].solution);
-			console.log("Hash : " + minimalCubeStateWithMoveSequence.state.hashPosition());
 			return minimalCubeStateWithMoveSequence.moveSequence.concat(
 				window.hashMapNearestPositions[minimalCubeStateWithMoveSequence.state.hashPosition()].solution);
 		}
