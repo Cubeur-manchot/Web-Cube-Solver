@@ -112,6 +112,9 @@ function solveMoveOptimalBreadthFirstImproved(cubeState) // same algorithm as ba
 					minimalCost = cost;
 				}
 			}
+			console.log("Solution begin : " + minimalCubeStateWithMoveSequence.moveSequence);
+			console.log("Solution end shortcut : " + window.hashMapNearestPositions[minimalCubeStateWithMoveSequence.state.hashPosition()].solution);
+			console.log("Hash : " + minimalCubeStateWithMoveSequence.state.hashPosition());
 			return minimalCubeStateWithMoveSequence.moveSequence.concat(
 				window.hashMapNearestPositions[minimalCubeStateWithMoveSequence.state.hashPosition()].solution);
 		}
@@ -130,9 +133,11 @@ function generateHashMapNearestStates(maxDepth) // generate hash map of nearest 
 		generatingMoves = window.generatingMoves[window.eventName].moves, generatingSenses = window.generatingMoves[window.eventName].senses,
 		cubeStateWithMoveSequence, cubeState, moveSequence, generatingMove, generatingSense, newMove, newCubeState, newMoveSequence, hashValue;
 	for (cubeOrientation of cubeOrientations) {
-		cubeStatePool = [{state: createCube(), moveSequence: []}];
+		console.log("Cube Orientation : " + cubeOrientation);
+		cubeStatePool = [{state: createCube(), moveSequence: [cubeOrientation]}];
 		cubeStatePool[0].state.applySequence(cubeOrientation);
-		hashMapResult[cubeStatePool[0].state.hashPosition()] = {cost: 0, solution: []};
+		console.log("Hash : " + cubeStatePool[0].state.hashPosition());
+		hashMapResult[cubeStatePool[0].state.hashPosition()] = {cost: 0, solution: cubeOrientation};
 		for (let depth = 1; depth <= maxDepth; depth++) {
 			nextCubeStatePool = [];
 			for (cubeStateWithMoveSequence of cubeStatePool) {
@@ -164,13 +169,6 @@ function generateHashMapNearestStates(maxDepth) // generate hash map of nearest 
 		}
 	}
 	window.hashMapNearestPositions = hashMapResult;
-}
-
-function checkFacePermutation(faceToCheck, associationTable)
-{
-	return associationTable[faceToCheck[0]] === faceToCheck[1]
-		&& associationTable[faceToCheck[1]] === faceToCheck[2]
-		&& associationTable[faceToCheck[2]] === faceToCheck[3];
 }
 
 function invertMove(move) // simply invert a move on a puzzle

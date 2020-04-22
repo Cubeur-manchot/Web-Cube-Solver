@@ -23,7 +23,7 @@ function init() // initialize admitted moves, generating moves and god's number 
 	window.generatingMoves["6x6x6"] = {moves: ["R", "U", "F", "L", "D", "B"], senses: ["", "'", "2"]};
 	window.generatingMoves["7x7x7"] = {moves: ["R", "U", "F", "L", "D", "B"], senses: ["", "'", "2"]};
 	window.generatingMoves["pyraminx"] = {moves: ["R", "U", "L", "B"], senses: ["", "'"]};
-	window.generatingMoves["skewb"] = {moves: ["R", "U", "L", "B"], senses: ["","'"]};
+	window.generatingMoves["skewb"] = {moves: ["b", "L", "f", "l"], senses: ["","'"]};
 
 	// God's number for each puzzle
 	window.godsNumber = [];

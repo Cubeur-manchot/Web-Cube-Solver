@@ -145,6 +145,8 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 	if (window.hashMapNearestPositions === undefined) {
 		if (window.eventName === "2x2x2") {
 			generateHashMapNearestStates(5);
+		} else if (window.eventName === "skewb") {
+			generateHashMapNearestStates(5);
 		}
 	}
 	// cut with spaces
@@ -257,7 +259,11 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 	for (move of fullyCheckedMovesArray) { // print parsed moves
 		parsedMovesHtmlTag.appendChild(createHtmlTagWithClassNameAndTextContent("div", "parsedMove", move));
 	}
-	window.moveSequence = fullyCheckedMovesArray;
+	if (window.eventName === "skewb" && getChosenNotation() === "WCANotationChoice") {
+		window.moveSequence = translateWCANotationToAlgorithmNotationForSkewb(fullyCheckedMovesArray);
+	} else {
+		window.moveSequence = fullyCheckedMovesArray;
+	}
 	window.currentCubeState = createCube();
 	window.currentCubeState.applySequence(window.moveSequence);
 }
@@ -276,7 +282,7 @@ function displayCube() // creates an image (and animation link if possible) in d
 		src = "";
 	} else if (window.eventName === "skewb") {
 		if (getChosenNotation() === "WCANotationChoice") {
-			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(translateWCANotationToAlgorithmNotationForSkewb(window.moveSequence));
+			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(window.moveSequence);
 		} else {
 			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(window.moveSequence);
 		}
