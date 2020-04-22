@@ -25,6 +25,9 @@ function solveCube() // main solve function which calls the chosen algorithm
 		alert("Error : algorithm '" + chosenAlgorithm + "' isn't implemented");
 		return;
 	}
+	if (window.eventName === "skewb" && getChosenNotationForSkewb("solution") === "WCANotationChoice") {
+		solutionSequence = translateAlgorithmNotationToWCANotationForSkewb(solutionSequence);
+	}
 	dateEnd = new Date();
 	solutionContainerHtmlTag.textContent = "";
 	if (solutionSequence[0] === "Error: pool length exceeded") {

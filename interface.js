@@ -11,9 +11,9 @@ function getChosenAlgorithm() // look in form#solvingAlgorithmChooserForm for ch
 	}
 }
 
-function getChosenNotation() // look in form#notationChooserForm for chosen notation
+function getChosenNotationForSkewb(scrambleOrSolution) // look in corresponding form for chosen scramble notation or solution notation
 {
-	for (let notationChoice of document.querySelector("form#notationChooserForm").querySelectorAll("input")) {
+	for (let notationChoice of document.querySelector("form#notationChooserForS" + scrambleOrSolution.substring(1) + "Form").querySelectorAll("input")) {
 		if (notationChoice.checked) {
 			return notationChoice.value;
 		}
@@ -26,48 +26,59 @@ function updateEventName() // look in select#eventNameSelect for selected event
 		previousEventName = window.eventName, newEventName = eventNameSelectHtmlTag.options[eventNameSelectHtmlTag.selectedIndex].value;
 	window.eventName = newEventName;
 	if (newEventName === "skewb") { // since WCA and usual notation contradict each other, the user has to choose the one to use
-		addNotationChooserForSkewb(eventNameSelectHtmlTag);
+		addNotationChoosersForSkewb(eventNameSelectHtmlTag);
 	} else if (previousEventName === "skewb") { // remove notation choice when selecting something other than skewb
-		document.querySelector("form#notationChooserForm").remove();
+		document.querySelector("form#notationChooserForScrambleForm").remove();
+		document.querySelector("form#notationChooserForSolutionForm").remove();
 	}
 	window.hashMapNearestPositions = undefined; // discard nearest position table
 }
 
-function addNotationChooserForSkewb(eventNameSelectHtmlTag) // add simple radio choice for skewb notation (WCA or Algorithm)
+function addNotationChoosersForSkewb(eventNameSelectHtmlTag) // add notation choice for scramble and solution
 {
-	let notationToUseChooserFormHtmlTag, notationChoiceRadioButtonHtmlTag, notationChoiceLabelHtmlTag;
+	createNotationFormForSkewb(eventNameSelectHtmlTag, "Solution");
+	createNotationFormForSkewb(eventNameSelectHtmlTag, "Scramble");
+}
+
+function createNotationFormForSkewb(elementAfterWhichInsertHtmlTag, scrambleOrSolution) // create radio button choice form for skewb notation (WCA or Algorithm)
+{
+	let notationToUseChooserFormHtmlTag, notationChoiceLabelHtmlTag;
 	// form
-	notationToUseChooserFormHtmlTag = createHtmlTagWithId("form", "notationChooserForm");
+	notationToUseChooserFormHtmlTag = createHtmlTagWithIdAndClassName("form", "notationChooserFor" + scrambleOrSolution + "Form", "notationChooserForm");
 	// general label
-	notationToUseChooserFormHtmlTag.appendChild(createHtmlTagWithIdAndTextContent("label", "notationChooserLabel", "Choose notation :"));
+	notationToUseChooserFormHtmlTag.appendChild(createHtmlTagWithIdAndTextContent("label", "notationChooserFor" + scrambleOrSolution + "Label",
+		scrambleOrSolution + " notation :"));
 	// break line
 	notationToUseChooserFormHtmlTag.appendChild(createHtmlTag("br"));
 	// first radio button
-	notationChoiceRadioButtonHtmlTag = createHtmlTagWithIdAndClassName("input", "WCANotationChoice", "notationChoice");
-	notationChoiceRadioButtonHtmlTag.type = "radio";
-	notationChoiceRadioButtonHtmlTag.name = "notationChooser";
-	notationChoiceRadioButtonHtmlTag.value = "WCANotationChoice";
-	notationChoiceRadioButtonHtmlTag.checked = true;
-	notationToUseChooserFormHtmlTag.appendChild(notationChoiceRadioButtonHtmlTag);
+	notationToUseChooserFormHtmlTag.appendChild(createRadioButtonForSkewbNotation("WCA", scrambleOrSolution, scrambleOrSolution === "Scramble"));
 	// first label
-	notationChoiceLabelHtmlTag = createHtmlTagWithClassNameAndTextContent("label", "notationChoiceLabel", "WCA (R, U, L, B)");
-	notationChoiceLabelHtmlTag.setAttribute("for", "WCANotationChoice");
+	notationChoiceLabelHtmlTag = createHtmlTagWithClassNameAndTextContent("label", "notationChoiceFor" + scrambleOrSolution + "Label",
+		"WCA (R, U, L, B)");
+	notationChoiceLabelHtmlTag.setAttribute("for", "WCANotationChoiceFor" + scrambleOrSolution);
 	notationToUseChooserFormHtmlTag.appendChild(notationChoiceLabelHtmlTag);
 	// break line
 	notationToUseChooserFormHtmlTag.appendChild(createHtmlTag("br"));
 	// second radio button
-	notationChoiceRadioButtonHtmlTag = createHtmlTagWithIdAndClassName("input", "algorithmNotationChoice", "notationChoice");
-	notationChoiceRadioButtonHtmlTag.type = "radio";
-	notationChoiceRadioButtonHtmlTag.name = "notationChooser";
-	notationChoiceRadioButtonHtmlTag.value = "algorithmNotationChoice";
-	notationChoiceRadioButtonHtmlTag.checked = false;
-	notationToUseChooserFormHtmlTag.appendChild(notationChoiceRadioButtonHtmlTag);
+	notationToUseChooserFormHtmlTag.appendChild(createRadioButtonForSkewbNotation("algorithm", scrambleOrSolution, scrambleOrSolution === "Solution"));
 	// second label
-	notationChoiceLabelHtmlTag = createHtmlTagWithClassNameAndTextContent("label", "notationChoiceLabel", "Algorithms (R, F, L, B, r, f, l, b)");
-	notationChoiceLabelHtmlTag.setAttribute("for", "algorithmNotationChoice");
+	notationChoiceLabelHtmlTag = createHtmlTagWithClassNameAndTextContent("label", "notationChoiceLabelFor" + scrambleOrSolution,
+		"Algorithms (R, F, L, B, r, f, l, b)");
+	notationChoiceLabelHtmlTag.setAttribute("for", "algorithmNotationChoiceFor" + scrambleOrSolution);
 	notationToUseChooserFormHtmlTag.appendChild(notationChoiceLabelHtmlTag);
 	// append form
-	eventNameSelectHtmlTag.insertAdjacentElement("afterend", notationToUseChooserFormHtmlTag);
+	elementAfterWhichInsertHtmlTag.insertAdjacentElement("afterend", notationToUseChooserFormHtmlTag);
+}
+
+function createRadioButtonForSkewbNotation(notationType, scrambleOrSolution, checked) // create radio button for skewb notation choice
+{
+	let notationChoiceRadioButtonHtmlTag = createHtmlTagWithIdAndClassName("input", notationType + "NotationChoiceFor" + scrambleOrSolution,
+		"notationChoiceFor" + scrambleOrSolution);
+	notationChoiceRadioButtonHtmlTag.type = "radio";
+	notationChoiceRadioButtonHtmlTag.name = "notationChooserFor" + scrambleOrSolution;
+	notationChoiceRadioButtonHtmlTag.value = notationType + "NotationChoice";
+	notationChoiceRadioButtonHtmlTag.checked = checked;
+	return notationChoiceRadioButtonHtmlTag;
 }
 
 function translateWCANotationToAlgorithmNotationForSkewb(moveSequence) // switch from WCA notation (R, U, L, B) to algorithm notation (R, F, L, B, r, f, l, b) for skewb
@@ -138,7 +149,7 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 		hasSliceNumber, hasMinus, minusIsClosed, hasBaseMove, hasTurnAngle, isCube;
 
 	// adjust list of admitted moves for skewb if Algorithm notation is chosen
-	if (window.eventName === "skewb" && getChosenNotation() === "algorithmNotationChoice") {
+	if (window.eventName === "skewb" && getChosenNotationForSkewb("scramble") === "algorithmNotationChoice") {
 		listOfAdmittedMoves = ["R", "F", "L", "B", "r", "f", "l", "b"];
 	}
 	// generate nearest positions table if needed
@@ -259,7 +270,7 @@ function parseMoves() // read input#movesToParse and transform the string in an 
 	for (move of fullyCheckedMovesArray) { // print parsed moves
 		parsedMovesHtmlTag.appendChild(createHtmlTagWithClassNameAndTextContent("div", "parsedMove", move));
 	}
-	if (window.eventName === "skewb" && getChosenNotation() === "WCANotationChoice") {
+	if (window.eventName === "skewb" && getChosenNotationForSkewb("scramble") === "WCANotationChoice") {
 		window.moveSequence = translateWCANotationToAlgorithmNotationForSkewb(fullyCheckedMovesArray);
 	} else {
 		window.moveSequence = fullyCheckedMovesArray;
