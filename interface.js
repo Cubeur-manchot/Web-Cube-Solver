@@ -281,11 +281,8 @@ function displayCube() // creates an image (and animation link if possible) in d
 	} else if (window.eventName === "megaminx") {
 		src = "";
 	} else if (window.eventName === "skewb") {
-		if (getChosenNotation() === "WCANotationChoice") {
-			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(window.moveSequence);
-		} else {
-			moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(window.moveSequence);
-		}
+		moveSequence = adjustMoveSequenceForThirdTurnPuzzlesImages(window.moveSequence);
+		cubeImageHtmlTag.style.height = "300px";
 		src = "http://cubiclealgdbimagegen.azurewebsites.net/generator?puzzle=skewb&alg=" + moveSequence;
 	} else if (window.eventName === "square one") {
 		src = "";
